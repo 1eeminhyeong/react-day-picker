@@ -1,5 +1,6 @@
+import type { DateLib } from "../classes/DateLib.js";
 import { CalendarWeek, CalendarDay, CalendarMonth } from "../classes/index.js";
-import type { DateLib, DayPickerProps } from "../types/index.js";
+import type { DayPickerProps } from "../types/index.js";
 
 /** Return the months to display in the calendar. */
 export function getMonths(
@@ -10,50 +11,49 @@ export function getMonths(
   /** Options from the props context. */
   props: Pick<
     DayPickerProps,
-    | "fixedWeeks"
-    | "ISOWeek"
-    | "locale"
-    | "weekStartsOn"
-    | "reverseMonths"
-    | "firstWeekContainsDate"
+    "broadcastCalendar" | "fixedWeeks" | "ISOWeek" | "reverseMonths"
   >,
   dateLib: DateLib
 ): CalendarMonth[] {
   const {
-    startOfWeek,
-    endOfWeek,
-    startOfISOWeek,
+    addDays,
+    endOfBroadcastWeek,
     endOfISOWeek,
     endOfMonth,
-    addDays,
+    endOfWeek,
+    getISOWeek,
     getWeek,
-    getISOWeek
+    startOfBroadcastWeek,
+    startOfISOWeek,
+    startOfWeek
   } = dateLib;
   const dayPickerMonths = displayMonths.reduce<CalendarMonth[]>(
     (months, month) => {
-      const firstDateOfFirstWeek = props.ISOWeek
-        ? startOfISOWeek(month)
-        : startOfWeek(month, {
-            locale: props.locale,
-            weekStartsOn: props.weekStartsOn
-          });
+      const firstDateOfFirstWeek = props.broadcastCalendar
+        ? startOfBroadcastWeek(month, dateLib)
+        : props.ISOWeek
+          ? startOfISOWeek(month)
+          : startOfWeek(month);
 
-      const lastDateOfLastWeek = props.ISOWeek
-        ? endOfISOWeek(endOfMonth(month))
-        : endOfWeek(endOfMonth(month), {
-            locale: props.locale,
-            weekStartsOn: props.weekStartsOn
-          });
+      const lastDateOfLastWeek = props.broadcastCalendar
+        ? endOfBroadcastWeek(month, dateLib)
+        : props.ISOWeek
+          ? endOfISOWeek(endOfMonth(month))
+          : endOfWeek(endOfMonth(month));
 
       /** The dates to display in the month. */
       const monthDates = dates.filter((date) => {
         return date >= firstDateOfFirstWeek && date <= lastDateOfLastWeek;
       });
 
-      if (props.fixedWeeks && monthDates.length < 42) {
+      const nrOfDaysWithFixedWeeks = props.broadcastCalendar ? 35 : 42;
+
+      if (props.fixedWeeks && monthDates.length < nrOfDaysWithFixedWeeks) {
         const extraDates = dates.filter((date) => {
+          const daysToAdd = nrOfDaysWithFixedWeeks - monthDates.length;
           return (
-            date > lastDateOfLastWeek && date <= addDays(lastDateOfLastWeek, 7)
+            date > lastDateOfLastWeek &&
+            date <= addDays(lastDateOfLastWeek, daysToAdd)
           );
         });
         monthDates.push(...extraDates);
@@ -61,13 +61,7 @@ export function getMonths(
 
       const weeks: CalendarWeek[] = monthDates.reduce<CalendarWeek[]>(
         (weeks, date) => {
-          const weekNumber = props.ISOWeek
-            ? getISOWeek(date)
-            : getWeek(date, {
-                locale: props.locale,
-                weekStartsOn: props.weekStartsOn,
-                firstWeekContainsDate: props.firstWeekContainsDate
-              });
+          const weekNumber = props.ISOWeek ? getISOWeek(date) : getWeek(date);
           const week = weeks.find((week) => week.weekNumber === weekNumber);
 
           const day = new CalendarDay(date, month, dateLib);
@@ -82,7 +76,6 @@ export function getMonths(
       );
 
       const dayPickerMonth = new CalendarMonth(month, weeks);
-
       months.push(dayPickerMonth);
       return months;
     },

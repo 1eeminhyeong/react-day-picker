@@ -24,11 +24,16 @@ export type DropdownOption = {
  */
 export function Dropdown(
   props: {
-    components: Pick<CustomComponents, "Select" | "Option" | "Chevron">;
-    classNames: Pick<
-      ClassNames,
-      UI.DropdownRoot | UI.Dropdown | UI.CaptionLabel | UI.Chevron
-    >;
+    /**
+     * @deprecated Use{@link useDayPicker} hook to get the list of internal
+     *   components.
+     */
+    components: CustomComponents;
+    /**
+     * @deprecated Use {@link useDayPicker} hook to get the list of internal
+     *   class names.
+     */
+    classNames: ClassNames;
     options?: DropdownOption[] | undefined;
   } & Omit<JSX.IntrinsicElements["select"], "children">
 ) {

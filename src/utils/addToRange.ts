@@ -1,5 +1,5 @@
-import { dateLib as defaultDateLib } from "../lib/index.js";
-import type { DateRange, DateLib } from "../types/index.js";
+import { defaultDateLib, type DateLib } from "../classes/DateLib.js";
+import type { DateRange } from "../types/index.js";
 
 /**
  * Add a day to an existing range.

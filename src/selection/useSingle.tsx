@@ -1,7 +1,8 @@
 import React from "react";
 
+import type { DateLib } from "../classes/DateLib.js";
+import { useControlledValue } from "../helpers/useControlledValue.js";
 import type {
-  DateLib,
   DayPickerProps,
   Modifiers,
   PropsSingle,
@@ -26,16 +27,14 @@ export function useSingle<T extends DayPickerProps>(
     onSelect
   } = props as PropsSingle;
 
-  const [selected, setSelected] = React.useState<Date | undefined>(
-    initiallySelected
+  const [internallySelected, setSelected] = useControlledValue(
+    initiallySelected,
+    onSelect ? initiallySelected : undefined
   );
 
-  const { isSameDay } = dateLib;
+  const selected = !onSelect ? internallySelected : initiallySelected;
 
-  // Update the selected date if the `selected` value changes.
-  React.useEffect(() => {
-    setSelected(initiallySelected);
-  }, [initiallySelected]);
+  const { isSameDay } = dateLib;
 
   const isSelected = (compareDate: Date) => {
     return selected ? isSameDay(selected, compareDate) : false;
@@ -51,7 +50,9 @@ export function useSingle<T extends DayPickerProps>(
       // If the date is the same, clear the selection.
       newDate = undefined;
     }
-    setSelected(newDate);
+    if (!onSelect) {
+      setSelected(newDate);
+    }
     if (required) {
       onSelect?.(newDate as Date, triggerDate, modifiers, e);
     } else {

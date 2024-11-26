@@ -1,7 +1,7 @@
 import React from "react";
 
 import type { DeprecatedUI } from "../UI.js";
-import type { Locale } from "../lib/dateLib.js";
+import type { Locale, DateLib } from "../classes/DateLib.js";
 
 import type {
   ClassNames,
@@ -16,8 +16,7 @@ import type {
   DayEventHandler,
   Modifiers,
   DateRange,
-  Mode,
-  DateLib
+  Mode
 } from "./shared.js";
 
 /**
@@ -45,7 +44,7 @@ export type DayPickerProps = PropsBase &
  */
 export interface PropsBase {
   /**
-   * Enable the selection of single day, multiple days or a range of days.
+   * Enable the selection of a single day, multiple days, or a range of days.
    *
    * @see https://daypicker.dev/docs/selection-modes
    */
@@ -57,13 +56,14 @@ export interface PropsBase {
    */
   required?: boolean | undefined;
 
-  /** Class name to add to the root element */
+  /** Class name to add to the root element. */
   className?: string;
   /**
    * Change the class names used by DayPicker.
    *
-   * Use this prop when you need to change the default class names — for example
-   * when importing the style via CSS modules or when using a CSS framework.
+   * Use this prop when you need to change the default class names — for
+   * example, when importing the style via CSS modules or when using a CSS
+   * framework.
    *
    * @see https://daypicker.dev/docs/styling
    */
@@ -172,7 +172,7 @@ export interface PropsBase {
   toYear?: number;
 
   /**
-   * Paginate the month navigation displaying the `numberOfMonths` at time.
+   * Paginate the month navigation displaying the `numberOfMonths` at a time.
    *
    * @see https://daypicker.dev/docs/customization#multiplemonths
    */
@@ -209,14 +209,13 @@ export interface PropsBase {
    * - `year`: display only the dropdown for the years
    *
    * **Note:** showing the dropdown will set the start/end months
-   * {@link fromYear} to the 100 years ago, and {@link toYear} to the current
-   * year.
+   * {@link fromYear} to 100 years ago, and {@link toYear} to the current year.
    *
    * @see https://daypicker.dev/docs/customization#caption-layouts
    */
   captionLayout?: "label" | "dropdown" | "dropdown-months" | "dropdown-years";
   /**
-   * Display always 6 weeks per each month, regardless the month’s number of
+   * Display always 6 weeks per each month, regardless of the month’s number of
    * weeks. Weeks will be filled with the days from the next month.
    *
    * @see https://daypicker.dev/docs/customization#fixed-weeks
@@ -230,6 +229,8 @@ export interface PropsBase {
   hideWeekdays?: boolean;
   /**
    * Show the outside days (days falling in the next or the previous month).
+   *
+   * **Note:** when {@link broadcastCalendar} is set, this prop defaults to true.
    *
    * @see https://daypicker.dev/docs/customization#outside-days
    */
@@ -245,17 +246,38 @@ export interface PropsBase {
    */
   showWeekNumber?: boolean;
   /**
+   * Display the weeks in the month following the broadcast calendar. Setting
+   * this prop will ignore {@link weekStartsOn} (always Monday) and
+   * {@link showOutsideDays} will default to true.
+   *
+   * @since 9.4.0
+   * @see https://daypicker.dev/docs/localization#broadcast-calendar
+   * @see https://en.wikipedia.org/wiki/Broadcast_calendar
+   */
+  broadcastCalendar?: boolean;
+  /**
    * Use ISO week dates instead of the locale setting. Setting this prop will
    * ignore `weekStartsOn` and `firstWeekContainsDate`.
-   *
-   * Use the
-   * [react-day-picker/utc](https://daypicker.dev/docs/localization#utc-dates)
-   * to set the calendar to UTC.
    *
    * @see https://daypicker.dev/docs/localization#iso-week-dates
    * @see https://en.wikipedia.org/wiki/ISO_week_date
    */
   ISOWeek?: boolean;
+  /**
+   * The time zone (IANA or UTC offset) to use in the calendar (experimental).
+   * See
+   * [Wikipedia](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+   * for the possible values.
+   *
+   * Time zones are supported by the `TZDate` object by the
+   * [@date-fns/tz](https://github.com/date-fns/tz) package. Please refer to the
+   * package documentation for more information.
+   *
+   * @since 9.1.1
+   * @experimental
+   * @see https://daypicker.dev/docs/time-zone
+   */
+  timeZone?: string | undefined;
   /**
    * Change the components used for rendering the calendar elements.
    *
@@ -263,24 +285,29 @@ export interface PropsBase {
    */
   components?: Partial<CustomComponents>;
   /**
-   * Add a footer to the calendar, acting as live region.
+   * Add a footer to the calendar, acting as a live region.
    *
    * Use this prop to communicate the calendar's status to screen readers.
    * Prefer strings over complex UI elements.
    *
-   * @see https://daypicker.dev/docs/accessibility#footer
+   * @see https://daypicker.dev/guides/accessibility#footer
    */
   footer?: React.ReactNode | string;
   /**
    * When a selection mode is set, DayPicker will focus the first selected day
-   * (if set) or the today's date (if not disabled).
+   * (if set) or today's date (if not disabled).
    *
-   * Use this prop when you need to focus DayPicker after a user actions, for
+   * Use this prop when you need to focus DayPicker after a user action, for
    * improved accessibility.
    *
-   * @see https://daypicker.dev/docs/accessibility#autofocus
+   * @see https://daypicker.dev/guides/accessibility#autofocus
    */
   autoFocus?: boolean;
+  /**
+   * @private
+   * @deprecated This prop will be removed. Use {@link autoFocus} instead.
+   */
+  initialFocus?: boolean;
   /**
    * Apply the `disabled` modifier to the matching days.
    *
@@ -338,15 +365,16 @@ export interface PropsBase {
   /** Add the language tag to the container element. */
   lang?: HTMLDivElement["lang"];
   /**
-   * The locale object used to localize dates. Pass a locale from `date-fns` to
-   * localize the calendar.
+   * The locale object used to localize dates. Pass a locale from
+   * `react-day-picker/locale` to localize the calendar.
    *
    * @example
-   *   import { es } from "date-fns/locale";
+   *   import { es } from "react-day-picker/locale";
    *   <DayPicker locale={es} />
    *
    * @defaultValue enUS - The English locale default of `date-fns`.
    * @see https://daypicker.dev/docs/localization
+   * @see https://github.com/date-fns/date-fns/tree/main/src/locale for a list of the supported locales
    */
   locale?: Partial<Locale> | undefined;
   /**
@@ -397,7 +425,7 @@ export interface PropsBase {
    */
   onPrevClick?: MonthChangeEventHandler;
   /**
-   * Event handler when a week number is clicked
+   * Event handler when a week number is clicked.
    *
    * @private
    * @deprecated Use a custom `WeekNumber` component instead.
@@ -420,13 +448,13 @@ export interface PropsBase {
   onDayMouseLeave?: DayEventHandler<React.MouseEvent>;
 
   /**
-   * Replace the default date library with a custom one.
+   * Replace the default date library with a custom one. Experimental: not
+   * guaranteed to be stable (may not respect semver).
    *
-   * @private
    * @since 9.0.0
    * @experimental
    */
-  dateLib?: Partial<DateLib> | undefined;
+  dateLib?: Partial<typeof DateLib.prototype> | undefined;
 
   /**
    * @private
@@ -469,9 +497,29 @@ export interface PropsBase {
    */
   onDayTouchStart?: DayEventHandler<React.TouchEvent>;
 }
+
+/**
+ * Shared handler type for `onSelect` callback when a selection mode is set.
+ *
+ * @template T - The type of the selected item.
+ * @callback OnSelectHandler
+ * @param {T} selected - The selected item after the event.
+ * @param {Date} triggerDate - The date when the event was triggered.
+ * @param {Modifiers} modifiers - The modifiers associated with the event.
+ * @param {React.MouseEvent | React.KeyboardEvent} e - The event object.
+ * @group DayPicker
+ */
+export type OnSelectHandler<T> = (
+  selected: T,
+  triggerDate: Date,
+  modifiers: Modifiers,
+  e: React.MouseEvent | React.KeyboardEvent
+) => void;
+
 /**
  * The props when the single selection is required.
  *
+ * @group DayPicker
  * @see https://daypicker.dev/docs/selection-modes#single-mode
  */
 export interface PropsSingleRequired {
@@ -480,16 +528,13 @@ export interface PropsSingleRequired {
   /** The selected date. */
   selected: Date | undefined;
   /** Event handler when a day is selected. */
-  onSelect?: (
-    selected: Date,
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent | React.KeyboardEvent
-  ) => void | undefined;
+  onSelect?: OnSelectHandler<Date>;
 }
+
 /**
  * The props when the single selection is optional.
  *
+ * @group DayPicker
  * @see https://daypicker.dev/docs/selection-modes#single-mode
  */
 export interface PropsSingle {
@@ -498,16 +543,13 @@ export interface PropsSingle {
   /** The selected date. */
   selected?: Date | undefined;
   /** Event handler when a day is selected. */
-  onSelect?: (
-    selected: Date | undefined,
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent | React.KeyboardEvent
-  ) => void;
+  onSelect?: OnSelectHandler<Date | undefined>;
 }
+
 /**
  * The props when the multiple selection is required.
  *
+ * @group DayPicker
  * @see https://daypicker.dev/docs/selection-modes#multiple-mode
  */
 export interface PropsMultiRequired {
@@ -516,20 +558,17 @@ export interface PropsMultiRequired {
   /** The selected dates. */
   selected: Date[] | undefined;
   /** Event handler when days are selected. */
-  onSelect?: (
-    selected: Date[],
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent | React.KeyboardEvent
-  ) => void;
+  onSelect?: OnSelectHandler<Date[]>;
   /** The minimum number of selectable days. */
   min?: number;
   /** The maximum number of selectable days. */
   max?: number;
 }
+
 /**
  * The props when the multiple selection is optional.
  *
+ * @group DayPicker
  * @see https://daypicker.dev/docs/selection-modes#multiple-mode
  */
 export interface PropsMulti {
@@ -538,12 +577,7 @@ export interface PropsMulti {
   /** The selected dates. */
   selected?: Date[] | undefined;
   /** Event handler when days are selected. */
-  onSelect?: (
-    selected: Date[] | undefined,
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent | React.KeyboardEvent
-  ) => void;
+  onSelect?: OnSelectHandler<Date[] | undefined>;
   /** The minimum number of selectable days. */
   min?: number;
   /** The maximum number of selectable days. */
@@ -552,6 +586,7 @@ export interface PropsMulti {
 /**
  * The props when the range selection is required.
  *
+ * @group DayPicker
  * @see https://daypicker.dev/docs/selection-modes#range-mode
  */
 export interface PropsRangeRequired {
@@ -567,12 +602,7 @@ export interface PropsRangeRequired {
   /** The selected range. */
   selected: DateRange | undefined;
   /** Event handler when a range is selected. */
-  onSelect?: (
-    selected: DateRange,
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent | React.KeyboardEvent
-  ) => void;
+  onSelect?: OnSelectHandler<DateRange>;
   /** The minimum number of days to include in the range. */
   min?: number;
   /** The maximum number of days to include in the range. */
@@ -581,6 +611,7 @@ export interface PropsRangeRequired {
 /**
  * The props when the range selection is optional.
  *
+ * @group DayPicker
  * @see https://daypicker.dev/docs/selection-modes#range-mode
  */
 export interface PropsRange {
@@ -596,12 +627,7 @@ export interface PropsRange {
   /** The selected range. */
   selected?: DateRange | undefined;
   /** Event handler when the selection changes. */
-  onSelect?: (
-    selected: DateRange | undefined,
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent | React.KeyboardEvent
-  ) => void | undefined;
+  onSelect?: OnSelectHandler<DateRange | undefined>;
   /** The minimum number of days to include in the range. */
   min?: number;
   /** The maximum number of days to include in the range. */

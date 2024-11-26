@@ -1,20 +1,27 @@
 import React from "react";
 
+import Head from "@docusaurus/Head";
 import Layout from "@theme/Layout";
-import * as locales from "date-fns/locale";
 import {
   DateRange,
   DayPicker,
   DayPickerProps,
   isDateRange
 } from "react-day-picker";
-import { DayPicker as DayPickerUtc } from "react-day-picker/utc";
+import * as locales from "react-day-picker/locale";
 
 import { BrowserWindow } from "../components/BrowserWindow";
 import { HighlightWithTheme } from "../components/HighlightWithTheme";
 
 import styles from "./playground.module.css";
 
+const timeZones = [
+  "UTC",
+  "America/New_York",
+  "Europe/London",
+  "Asia/Tokyo",
+  "Australia/Sydney"
+];
 /**
  * Function to format a json object of props to a jsx source displaying the
  * props as example
@@ -51,25 +58,21 @@ export default function Playground() {
   const [selected, setSelected] = React.useState<
     Date | Date[] | DateRange | undefined
   >();
-  const [utc, setUtc] = React.useState(false);
 
   const [accentColor, setAccentColor] = React.useState<string>();
   const [backgroundAccentColor, setBackgroundAccountColor] =
     React.useState<string>();
   const [rangeMiddleColor, setrangeMiddleColor] = React.useState<string>();
 
-  const Component = utc ? DayPickerUtc : DayPicker;
-  let formattedProps = `<DayPicker${toJSX({ ...props, locale: undefined })} \n/>`;
+  const formattedProps = `<DayPicker${toJSX({ ...props, locale: undefined })} \n/>`;
 
-  if (utc) {
-    formattedProps =
-      `import { DayPicker } from "react-day-picker/utc";\n\n` + formattedProps;
-  }
+  const currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return (
     <Layout>
-      <style>
-        {`
+      <Head>
+        <style>
+          {`
           .rdp-root,
           [data-theme="dark"] .rdp-root {
             ${accentColor ? `--rdp-accent-color: ${accentColor} !important` : ""};
@@ -77,7 +80,13 @@ export default function Playground() {
             ${rangeMiddleColor ? `--rdp-range_middle-color: ${rangeMiddleColor} !important` : ""};
           }
         `}
-      </style>
+        </style>
+        <title>DayPicker Playground</title>
+        <meta
+          name="description"
+          content="Customize the DayPicker component and see the code changes in real time."
+        />
+      </Head>
       <div className={styles.playground}>
         <h1>Playground</h1>
         <form className={styles.form}>
@@ -109,6 +118,7 @@ export default function Playground() {
                 <input
                   type="checkbox"
                   name="showOutsideDays"
+                  checked={props.showOutsideDays}
                   onChange={(e) =>
                     setProps({ ...props, showOutsideDays: e.target.checked })
                   }
@@ -339,6 +349,27 @@ export default function Playground() {
             <legend>Localization</legend>
             <div className={styles.fields}>
               <label>
+                Time Zone:
+                <select
+                  name="timeZone"
+                  value={props.timeZone}
+                  onChange={(e) =>
+                    setProps({
+                      ...props,
+                      timeZone: e.target.value
+                    })
+                  }
+                >
+                  <option></option>
+                  <option value={currentTimeZone}>{currentTimeZone}</option>
+                  {timeZones.map((tz) => (
+                    <option key={tz} value={tz}>
+                      {tz}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
                 Locale:
                 <select
                   name="locale"
@@ -364,6 +395,8 @@ export default function Playground() {
                 Weeks starts on:
                 <select
                   name="weekStartsOn"
+                  disabled={props.broadcastCalendar}
+                  value={props.weekStartsOn}
                   onChange={(e) =>
                     setProps({
                       ...props,
@@ -406,18 +439,8 @@ export default function Playground() {
               <label>
                 <input
                   type="checkbox"
-                  name="UTC"
-                  onChange={(e) => {
-                    setSelected(undefined);
-                    setUtc(e.target.checked);
-                  }}
-                />
-                UTC Dates
-              </label>
-              <label>
-                <input
-                  type="checkbox"
                   name="ISOWeek"
+                  disabled={props.broadcastCalendar}
                   onChange={(e) =>
                     setProps({ ...props, ISOWeek: e.target.checked })
                   }
@@ -437,13 +460,35 @@ export default function Playground() {
                 />
                 Right-to-left direction
               </label>
+
+              <label>
+                <input
+                  type="checkbox"
+                  name="broadcastCalendar"
+                  onChange={(e) =>
+                    setProps({
+                      ...props,
+                      broadcastCalendar: e.target.checked,
+                      showOutsideDays: e.target.checked
+                        ? true
+                        : props.showOutsideDays
+                    })
+                  }
+                />
+                Broadcast Calendar
+              </label>
             </div>
           </fieldset>
         </form>
         <div className={styles.browserWindow}>
           <BrowserWindow url="">
-            {/* @ts-expect-error abc */}
-            <Component {...props} onSelect={setSelected} selected={selected} />
+            <DayPicker
+              {...props}
+              onSelect={setSelected}
+              // @ts-expect-error abc
+              selected={selected}
+              // timeZone="Europe/Athens"
+            />
           </BrowserWindow>
         </div>
         <div className={styles.props}>

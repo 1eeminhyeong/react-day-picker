@@ -1,6 +1,6 @@
+import { defaultLocale, type DateLib } from "../classes/DateLib.js";
 import { DropdownOption } from "../components/Dropdown.js";
-import type { Locale } from "../lib/dateLib.js";
-import type { DateLib, Formatters } from "../types/index.js";
+import type { Formatters } from "../types/index.js";
 
 /** Return the months to show in the dropdown. */
 export function getMonthOptions(
@@ -8,13 +8,12 @@ export function getMonthOptions(
   navStart: Date | undefined,
   navEnd: Date | undefined,
   formatters: Pick<Formatters, "formatMonthDropdown">,
-  locale: Locale | undefined,
   dateLib: DateLib
 ): DropdownOption[] | undefined {
   if (!navStart) return undefined;
   if (!navEnd) return undefined;
 
-  const { addMonths, startOfMonth, isBefore, Date } = dateLib;
+  const { addMonths, startOfMonth, isBefore } = dateLib;
   const year = displayMonth.getFullYear();
 
   const months: number[] = [];
@@ -27,10 +26,16 @@ export function getMonthOptions(
     return a - b;
   });
   const options = sortedMonths.map((value) => {
-    const label = formatters.formatMonthDropdown(value, locale);
+    const label = formatters.formatMonthDropdown(
+      value,
+      dateLib.options.locale ?? defaultLocale
+    );
+    const month = dateLib.Date
+      ? new dateLib.Date(year, value)
+      : new Date(year, value);
     const disabled =
-      (navStart && new Date(year, value) < startOfMonth(navStart)) ||
-      (navEnd && new Date(year, value) > startOfMonth(navEnd)) ||
+      (navStart && month < startOfMonth(navStart)) ||
+      (navEnd && month > startOfMonth(navEnd)) ||
       false;
     return { value, label, disabled };
   });

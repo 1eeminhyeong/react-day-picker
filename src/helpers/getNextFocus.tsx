@@ -1,6 +1,6 @@
+import type { DateLib } from "../classes/DateLib.js";
 import { CalendarDay } from "../classes/index.js";
 import type {
-  DateLib,
   DayPickerProps,
   MoveFocusBy,
   MoveFocusDir
@@ -18,7 +18,7 @@ export function getNextFocus(
   calendarEndMonth: Date | undefined,
   props: Pick<
     DayPickerProps,
-    "disabled" | "hidden" | "modifiers" | "locale" | "ISOWeek" | "weekStartsOn"
+    "disabled" | "hidden" | "modifiers" | "ISOWeek" | "timeZone"
   >,
   dateLib: DateLib,
   attempt: number = 0

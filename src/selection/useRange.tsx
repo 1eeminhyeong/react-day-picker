@@ -1,14 +1,14 @@
 import React from "react";
 
+import type { DateLib } from "../classes/DateLib.js";
+import { useControlledValue } from "../helpers/useControlledValue.js";
 import type {
-  DateLib,
-  DateRange,
   DayPickerProps,
   Modifiers,
   PropsRange,
   Selection
 } from "../types/index.js";
-import { addToRange, dateMatchModifiers } from "../utils/index.js";
+import { addToRange, rangeContainsModifiers } from "../utils/index.js";
 import { rangeIncludesDate } from "../utils/rangeIncludesDate.js";
 
 export function useRange<T extends DayPickerProps>(
@@ -23,14 +23,12 @@ export function useRange<T extends DayPickerProps>(
     onSelect
   } = props as PropsRange;
 
-  const [selected, setSelected] = React.useState<DateRange | undefined>(
-    initiallySelected
+  const [internallySelected, setSelected] = useControlledValue(
+    initiallySelected,
+    onSelect ? initiallySelected : undefined
   );
 
-  // Update the selected date if the `selected` prop changes.
-  React.useEffect(() => {
-    setSelected(initiallySelected);
-  }, [initiallySelected]);
+  const selected = !onSelect ? internallySelected : initiallySelected;
 
   const isSelected = (date: Date) =>
     selected && rangeIncludesDate(selected, date, false, dateLib);
@@ -45,24 +43,23 @@ export function useRange<T extends DayPickerProps>(
       ? addToRange(triggerDate, selected, min, max, required, dateLib)
       : undefined;
 
-    if (newRange?.from && newRange.to) {
-      let newDate = newRange.from;
-      while (dateLib.differenceInCalendarDays(newRange.to, newDate) > 0) {
-        newDate = dateLib.addDays(newDate, 1);
-        if (
-          excludeDisabled &&
-          disabled &&
-          dateMatchModifiers(newDate, disabled, dateLib)
-        ) {
-          // if a disabled days is found, the range is reset
-          newRange.from = triggerDate;
-          newRange.to = undefined;
-          break;
-        }
+    if (excludeDisabled && disabled && newRange?.from && newRange.to) {
+      if (
+        rangeContainsModifiers(
+          { from: newRange.from, to: newRange.to },
+          disabled,
+          dateLib
+        )
+      ) {
+        // if a disabled days is found, the range is reset
+        newRange.from = triggerDate;
+        newRange.to = undefined;
       }
     }
 
-    setSelected(newRange);
+    if (!onSelect) {
+      setSelected(newRange);
+    }
     onSelect?.(newRange, triggerDate, modifiers, e);
 
     return newRange;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
@@ -67,6 +68,17 @@ const config: Config = {
       {
         entryPoints: ["../src/index.ts"],
         tsconfig: "../tsconfig-docs.json"
+      }
+    ],
+    [
+      "@docusaurus/plugin-client-redirects",
+      {
+        redirects: [
+          {
+            to: "/guides/accessibility",
+            from: ["/docs/accessibility"]
+          }
+        ]
       }
     ]
   ],

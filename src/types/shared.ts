@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import type { CSSProperties } from "react";
 
 import { UI, DayFlag, SelectionState } from "../UI.js";
@@ -10,6 +9,7 @@ import {
   formatMonthDropdown,
   formatWeekdayName,
   formatWeekNumber,
+  formatWeekNumberHeader,
   formatYearCaption,
   formatYearDropdown
 } from "../formatters/index.js";
@@ -26,7 +26,6 @@ import {
   labelWeekNumberHeader,
   labelYearDropdown
 } from "../labels/index.js";
-import { dateLib } from "../lib/index.js";
 
 /**
  * Selection modes supported by DayPicker.
@@ -45,7 +44,12 @@ export type Mode = "single" | "multiple" | "range";
  * @see https://daypicker.dev/guides/custom-components
  */
 export type CustomComponents = {
-  /** Render any button element in DayPicker. */
+  /**
+   * Render any button element in DayPicker.
+   *
+   * @deprecated Use {@link CustomComponents.NextMonthButton} or
+   *   {@link CustomComponents.PreviousMonthButton} instead.
+   */
   Button: typeof components.Button;
   /** Render the chevron icon used in the navigation buttons and dropdowns. */
   Chevron: typeof components.Chevron;
@@ -73,6 +77,10 @@ export type CustomComponents = {
   Nav: typeof components.Nav;
   /** Render the `<option>` HTML element in the dropdown. */
   Option: typeof components.Option;
+  /** Render the previous month button element in the navigation. */
+  PreviousMonthButton: typeof components.PreviousMonthButton;
+  /** Render the next month button element in the navigation. */
+  NextMonthButton: typeof components.NextMonthButton;
   /** Render the root element of the calendar. */
   Root: typeof components.Root;
   /** Render the select element in the dropdowns. */
@@ -89,29 +97,32 @@ export type CustomComponents = {
   WeekNumber: typeof components.WeekNumber;
   /** Render the header of the week number column. */
   WeekNumberHeader: typeof components.WeekNumberHeader;
+  /** Render the dropdown with the months. */
+  MonthsDropdown: typeof components.MonthsDropdown;
+  /** Render the dropdown with the years. */
+  YearsDropdown: typeof components.YearsDropdown;
 };
-
-/** @private */
-export type DateLib = typeof dateLib;
 
 /** Represent a map of formatters used to render localized content. */
 export type Formatters = {
   /** Format the caption of a month grid. */
   formatCaption: typeof formatCaption;
-  /** @deprecated Use {@link Formatters.formatCaption} instead. */
-  formatMonthCaption: typeof formatMonthCaption;
-  /** Format the label in the month dropdown. */
-  formatMonthDropdown: typeof formatMonthDropdown;
-  /** @deprecated Use {@link Formatters.formatYearDropdown} instead. */
-  formatYearCaption: typeof formatYearCaption;
-  /** Format the label in the year dropdown. */
-  formatYearDropdown: typeof formatYearDropdown;
   /** Format the day in the day cell. */
   formatDay: typeof formatDay;
+  /** Format the label in the month dropdown. */
+  formatMonthDropdown: typeof formatMonthDropdown;
+  /** @deprecated Use {@link Formatters.formatCaption} instead. */
+  formatMonthCaption: typeof formatMonthCaption;
   /** Format the week number. */
   formatWeekNumber: typeof formatWeekNumber;
+  /** Format the header of the week number column. */
+  formatWeekNumberHeader: typeof formatWeekNumberHeader;
   /** Format the week day name in the header. */
   formatWeekdayName: typeof formatWeekdayName;
+  /** Format the label in the year dropdown. */
+  formatYearDropdown: typeof formatYearDropdown;
+  /** @deprecated Use {@link Formatters.formatYearDropdown} instead. */
+  formatYearCaption: typeof formatYearCaption;
 };
 
 /** Map of functions to translate ARIA labels for the relative elements. */
@@ -130,7 +141,7 @@ export type Labels = {
   labelNext: typeof labelNext;
   /** The label for the "previous month" button. */
   labelPrevious: typeof labelPrevious;
-  /** The label for the day button.. */
+  /** The label for the day button. */
   labelDayButton: typeof labelDayButton;
   /** @deprecated Use {@link labelDayButton} instead. */
   labelDay: typeof labelDayButton;
@@ -308,15 +319,27 @@ export type Styles = {
 };
 
 /**
- * The modifiers that are matching a day in the calendar.
+ * Represents the modifiers that match a specific day in the calendar.
+ *
+ * - Retrieve modifiers using the {@link OnSelectHandler} via the `onSelect` prop,
+ *   or within custom components using the {@link useDayPicker} hook.
+ * - Includes built-in modifiers from {@link DayFlag} and {@link SelectionState}.
+ * - Add custom modifiers using the `modifiers` prop.
  *
  * @example
  *   const modifiers: Modifiers = {
- *     today: false, // the day is not today
- *     selected: true, // the day is selected
- *     weekend: false // the day is not in the weekend
- *     // etc
+ *   today: false, // the day is not today
+ *   selected: true, // the day is selected
+ *   disabled: false, // the day is not disabled
+ *   outside: false, // the day is not outside the month
+ *   focused: false, // the day is not focused
+ *
+ *   weekend: false // custom modifier example for matching a weekend
+ *   booked: true // custom modifier example for matching a booked day
+ *   available: false // custom modifier example for matching an available day
  *   };
+ *
+ * @see https://daypicker.dev/guides/custom-modifiers
  */
 export type Modifiers = Record<string, boolean>;
 

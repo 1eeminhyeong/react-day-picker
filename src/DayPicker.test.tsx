@@ -1,6 +1,6 @@
 import React from "react";
 
-import { addMonths, startOfDay, startOfMonth } from "date-fns";
+import { startOfDay, startOfMonth } from "date-fns";
 import { defaultLocale } from "react-day-picker";
 
 import {
@@ -16,7 +16,6 @@ import { user } from "@/test/user";
 import { DayPicker } from "./DayPicker";
 import { MonthProps } from "./components/Month";
 import { MonthsProps } from "./components/Months";
-import { labelGrid } from "./labels";
 
 const testId = "test";
 const dayPicker = () => screen.getByTestId(testId);
@@ -147,19 +146,6 @@ describe("when the `month` is changed programmatically", () => {
   });
 });
 
-describe("when the `startMonth` is changed programmatically", () => {
-  test("should update the calendar to reflect the new month", async () => {
-    const initialStartMonth = new Date();
-    const newStartMonth = addMonths(new Date(), 2);
-    const { rerender } = render(
-      <DayPicker startMonth={initialStartMonth} mode="single" />
-    );
-    expect(grid(labelGrid(initialStartMonth))).toBeInTheDocument();
-    rerender(<DayPicker startMonth={newStartMonth} mode="single" />);
-    expect(grid(labelGrid(newStartMonth))).toBeInTheDocument();
-  });
-});
-
 test("extends the default locale", () => {
   render(
     <DayPicker
@@ -174,4 +160,36 @@ test("extends the default locale", () => {
   );
   // Check if the custom month name is rendered
   expect(grid("bar 2024")).toBeInTheDocument();
+});
+
+test("should render the custom components", () => {
+  render(
+    <DayPicker
+      footer="test"
+      captionLayout="dropdown"
+      components={{
+        Nav: () => <div>Custom Nav</div>,
+        YearsDropdown: () => <div>Custom YearsDropdown</div>,
+        MonthsDropdown: () => <div>Custom MonthsDropdown</div>,
+        Footer: () => <div>Custom Footer</div>
+      }}
+    />
+  );
+  expect(screen.getByText("Custom Nav")).toBeInTheDocument();
+  expect(screen.getByText("Custom Footer")).toBeInTheDocument();
+  expect(screen.getByText("Custom YearsDropdown")).toBeInTheDocument();
+  expect(screen.getByText("Custom MonthsDropdown")).toBeInTheDocument();
+});
+
+describe("when interactive", () => {
+  test("render a valid HTML", () => {
+    render(<DayPicker mode="single" />);
+    expect(document.body).toHTMLValidate();
+  });
+});
+describe("when not interactive", () => {
+  test("render a valid HTML", () => {
+    render(<DayPicker />);
+    expect(document.body).toHTMLValidate();
+  });
 });

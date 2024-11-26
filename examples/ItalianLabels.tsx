@@ -1,8 +1,8 @@
 import React from "react";
 
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
+import { it } from "react-day-picker/locale";
 
 export function ItalianLabels() {
   return (
@@ -10,7 +10,7 @@ export function ItalianLabels() {
       locale={it}
       labels={{
         labelDayButton: (date, { today, selected }) => {
-          let label = format(date, "PPPP");
+          let label = format(date, "PPPP", { locale: it });
           if (today) label = `Oggi, ${label}`;
           if (selected) label = `${label}, selezionato`;
           return label;

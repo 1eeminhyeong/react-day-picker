@@ -1,40 +1,31 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Localization
 
-Learn how to set the locale, adjust the week start day, and apply ISO Week Dates to enhance the user experience across different regions and languages.
+DayPicker provides various options to customize the calendar for different languages and regions.
 
-## Locale props
-
-| Prop Name               | Type                                          | Description                                                        |
-| ----------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| `locale`                | [`Locale`](https://date-fns.org/docs/I18n)    | Set the locale. Default is `en-US`.                                |
-| `weekStartsOn`          | `1` \| `2` \| `3` \| `4` \| `5` \| `6` \| `7` | Display the days falling into the other months.                    |
-| `firstWeekContainsDate` | `1` \| `4`                                    | Configure the first date in the first week of the year.            |
-| `ISOWeek`               | `boolean`                                     | Use [ISO Week Dates](https://en.wikipedia.org/wiki/ISO_week_date). |
+| Prop Name               | Type                                          | Description                                                                              |
+| ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `locale`                | [`Locale`](https://date-fns.org/docs/I18n)    | Set the locale. Default is `en-US`.                                                      |
+| `weekStartsOn`          | `1` \| `2` \| `3` \| `4` \| `5` \| `6` \| `7` | Change the first day of the week.                                                        |
+| `firstWeekContainsDate` | `1` \| `4`                                    | Configure the first date in the first week of the year.                                  |
+| `timeZone`              | `string`                                      | The time zone (IANA or UTC offset) to use in the calendar.                               |
+| `ISOWeek`               | `boolean`                                     | Switch to [ISO Week Dates](https://en.wikipedia.org/wiki/ISO_week_date).                 |
+| `broadcastCalendar`     | `boolean`                                     | Switch to the [US Broadcast Calendar](https://en.wikipedia.org/wiki/Broadcast_calendar). |
+| `jalali`                | `boolean`                                     | Switch to the Jalali calendar.                                                           |
 
 ## Setting the Locale
 
-### 1. Install date-fns
-
-DayPicker uses the [date-fns](https://date-fns.org) library to localize the calendar. To set a different locale, you need to install `date-fns`:
-
-```bash npm2yarn
-npm install date-fns
-```
-
-### 2. Set a Different Locale
-
-By default, the locale is set to English (US). To localize the calendar, pass a [`Locale`](https://date-fns.org/docs/I18n) object to the `locale` prop.
-
-For example, to localize the calendar in Spanish, import the `es` locale object from date-fns and pass it to the component.
+To change the default `en-US` to another locale, import a locale object from `react-day-picker/locale` and pass it to the`locale` prop.
 
 ```tsx
-import { es } from "date-fns/locale";
+// import the locale object
+import { es } from "react-day-picker/locale";
 
-<DayPicker locale={es} />; // Set the locale to Spanish
+// use the locale object
+<DayPicker locale={es} />;
 ```
 
 <BrowserWindow>
@@ -43,7 +34,7 @@ import { es } from "date-fns/locale";
 
 :::tip Customizing the Locale
 
-You can customize the locale by passing an object with the desired translations. Use the `defaultLocale` object for the default translations.
+You can customize the locale by passing an object with the desired translations. Use the `defaultLocale` object for the default translation values.
 
 ```tsx
 import { DayPicker, defaultLocale } from "react-day-picker";
@@ -62,24 +53,29 @@ import { DayPicker, defaultLocale } from "react-day-picker";
 
 :::
 
-## First Date of the Week
+## Changing the Time Zone {#time-zone}
 
-Use the `weekStartsOn` prop to specify the starting day of the week.
+See [Time Zone docs](./time-zone.mdx) for more information.
+
+## Localization Options
+
+### First Date of the Week
+
+Use the `weekStartsOn` prop to set the first day of the week.
 
 ```tsx
-<DayPicker locale={es} weekStartsOn={0} /> // Start the week on Domingo
+<DayPicker weekStartsOn={0} /> // Start the week on Sunday
 ```
 
 <BrowserWindow>
-  <Examples.SpanishWeekStartsOn />
+  <Examples.WeekStartsOn />
 </BrowserWindow>
 
-## First Week Contains Date
+### First Week Contains Date
 
-The `firstWeekContainsDate` prop can be used to change the first day of the week for the year's initial week, which is used in the calculation of week numbers.
+The `firstWeekContainsDate` prop sets the first day of the year's initial week, which is used to calculate week numbers. Acceptable values are `1` for Monday and `4` for Thursday.
 
-- Acceptable values are `1` for Monday and `4` for Thursday.
-- See also [Week Numbering](https://en.wikipedia.org/wiki/Week#Numbering) and the [getWeek function](https://date-fns.org/docs/getWeek).
+For more information, see [Week Numbering](https://en.wikipedia.org/wiki/Week#Numbering) on Wikipedia and the [getWeek function](https://date-fns.org/docs/getWeek) from `date-fns`.
 
 ```tsx
 <DayPicker
@@ -88,9 +84,9 @@ The `firstWeekContainsDate` prop can be used to change the first day of the week
 />
 ```
 
-## ISO Week Dates
+### ISO Week Dates
 
-Use `ISOWeek` to switch using [ISO Week Dates](https://en.wikipedia.org/wiki/ISO_week_date) instead of the locale setting.
+Use the `ISOWeek` prop to switch to [ISO Week Dates](https://en.wikipedia.org/wiki/ISO_week_date) instead of the locale setting.
 
 ```tsx
 <DayPicker ISOWeek />
@@ -100,64 +96,27 @@ Use `ISOWeek` to switch using [ISO Week Dates](https://en.wikipedia.org/wiki/ISO
   <Examples.WeeknumberIso />
 </BrowserWindow>
 
-## UTC Dates
+## Broadcast Calendar
 
-DayPicker uses the local time zone by default. To switch to UTC dates, add [@date-fns/utc](https://www.npmjs.com/package/@date-fns/utc) to your dependencies and import `DayPicker` from `react-day-picker/utc` instead.
+Switch to the [US Broadcast Calendar](https://en.wikipedia.org/wiki/Broadcast_calendar) by setting the `broadcastCalendar` prop.
 
-:::note Experimental feature
-
-The UTC mode is an experimental feature. [Please report](https://github.com/gpbl/react-day-picker/issues) any issues you may encounter, thanks!
-
-:::
-
-#### 1. Install the `@date-fns/utc` package
-
-```bash npm2yarn
-npm install @date-fns/utc
-```
-
-#### 2. Import `DayPicker` from `react-day-picker/utc`
-
-```diff
-- import { DayPicker } from 'react-day-picker';
-+ import { DayPicker } from 'react-day-picker/utc';
-```
-
-#### 3. Use DayPicker as usual
+In the broadcast calendar, weeks start on Monday and end on Sunday. Each month has either 28 or 35 days.
 
 ```tsx
-import { UTCDate } from "@date-fns/utc";
-import { DayPicker } from "react-day-picker/utc";
-
-export function Utc() {
-  const [selected, setSelected] = React.useState<Date>(new UTCDate());
-  return (
-    <DayPicker
-      mode="single"
-      required
-      selected={selected}
-      onSelect={(date: Date) => {
-        setSelected(date);
-      }}
-      footer={selected ? `Selected: ${selected.toUTCString()}` : null}
-    />
-  );
-}
+<DayPicker broadcastCalendar />
 ```
 
-Observe how dates are always GMT.
-
 <BrowserWindow>
-  <Examples.Utc />
+  <Examples.BroadcastCalendar />
 </BrowserWindow>
 
 ## Jalali Calendar
 
-DayPicker supports the Jalali calendar thanks to the [date-fns-jalali](https://www.npmjs.com/package/date-fns-jalali) package. To switch to the Jalali calendar, add `date-fns-jalali` to your dependencies and import `DayPicker` from `react-day-picker/jalali` instead.
+DayPicker supports the Jalali calendar through the [date-fns-jalali](https://www.npmjs.com/package/date-fns-jalali) package. To switch to the Jalali calendar, add `date-fns-jalali` to your dependencies and import `DayPicker` from `react-day-picker/jalali`.
 
-:::note Experimental feature
+:::warning Experimental Feature
 
-The support for the Jalali calendar is an experimental feature. [Please report](https://github.com/gpbl/react-day-picker/issues) any issues you may encounter, thanks!
+Support for the Jalali calendar is an experimental feature. [Please report](https://github.com/gpbl/react-day-picker/issues) any issues you encounter. Thank you!
 
 :::
 
@@ -176,13 +135,13 @@ npm install date-fns-jalali
 
 #### 3. Use DayPicker as usual
 
-Note that you can set the right-to-left direction and change the locale.
+You can set the right-to-left direction and change the locale as needed.
 
 ```tsx title="./JalaliCalendar.jsx"
 import React from "react";
 
-import { faIR } from "date-fns/locale";
 import { DayPicker } from "react-day-picker/jalali";
+import { faIR } from "react-day-picker/locale";
 
 export function Jalali() {
   return <DayPicker mode="single" locale={faIR} dir="rtl" />;

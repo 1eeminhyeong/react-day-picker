@@ -79,6 +79,7 @@ html[data-theme="dark"] {
 .rdp-footer {
   margin: 1rem 0;
 }
+
 html[data-theme="dark"] .rdp-root {
   --rdp-accent-color: var(--ifm-color-primary);
   --rdp-accent-background-color: #073845;
@@ -169,18 +170,20 @@ a > code {
 
 a.menu__link {
   transition: unset;
-  font-size: 0.875rem;
+  font-size: 14px;
   background: unset;
   line-height: 1.5;
 }
 
 a.menu__link:not(:hover):not(.menu__link--active) {
-  opacity: 0.7;
+  opacity: 1;
 }
-
+a.menu__link--active {
+  font-weight: 600;
+}
 a.menu__link[aria-expanded] {
-  /* font-weight: 700; */
-  cursor: default;
+  font-weight: 600;
+  /* cursor: default; */
 }
 
 .menu__list-item-collapsible {
