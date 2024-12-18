@@ -88,13 +88,16 @@ const config: Config = {
           }
         ]
       }
-    ],
-    [
-      "docusaurus-plugin-plausible",
-      {
-        domain: "daypicker.dev"
-      }
     ]
+  ],
+
+  scripts: [
+    {
+      src: "/q/p/script.js",
+      defer: true,
+      "data-domain": "daypicker.dev",
+      "data-api": "/q/a/event"
+    }
   ],
 
   themeConfig: {
@@ -120,7 +123,8 @@ const config: Config = {
       title: "React DayPicker",
       logo: {
         alt: "DayPicker Logo",
-        src: "img/logo.png"
+        src: "img/logo.png",
+        srcDark: "img/logo-dark.png"
       },
       items: [
         {
